@@ -8,9 +8,10 @@ pacman::p_load(readxl, magrittr, stringr,
 #load functions from scripts
 scripts_files <- c("./R_Scripts/UtilityFunctions.R",
                    "./R_scripts/EMRFunctions.R",
-                   "./R_scripts/LoadAllEEFiles.R",
+                   #"./R_scripts/LoadAllEEFiles.R",
                    "./R_scripts/HeadCountFTECount.R",
-                   "./R_scripts/FLSAFunctions.R")
+                   "./R_scripts/FLSAFunctions.R",
+                   "./R_scripts/1CompileAllEEReports.R")
 lapply(scripts_files, source)
 rm(scripts_files)
 
@@ -24,15 +25,29 @@ all_ee_single_df <- all_ee_data_list[[1]]
 all_ee_split <- all_ee_data_list[[2]]
 
 #fix the names of all_ee_split list to drop the time portion of the pOSIXCT
-names(all_ee_split) <- str_sub(names(all_ee_split), start = 1, end = 10)
+names(all_ee_split) <- str_sub(names(all_ee_split),
+                               start = 1,
+                               end = 10)
 
 # Get Headcount and FTE counts for departments and orgs
-most_recent_report_indx <- length(allee_split)
-hc_fte_summary <- GetHCandFTEbyOrgs(all_ee_split[[most_recent_report_indx]], use_emr_orgs = TRUE)
+most_recent_report_indx <- length(all_ee_split)
+hc_fte_summary <- GetHCandFTEbyOrgs(all_ee_split[[most_recent_report_indx]],
+                                    use_emr_orgs = TRUE)
+
+# Add Salary info to all_ee dataframe(s)
+all_ee_single_df <- AddLongevityYearsCol(all_ee_single_df,
+                                         long_date_col_name = "Longevity Date",
+                                         emr_job_type_col_name = "EMRJobType",
+                                         curr_date_col_name = "Date")
 
 # Write most recent all ee with column updates to a new file
-most_recent_all_ee <- filter(all_ee_single_df, Date == max(all_ee_single_df$Date))
-filename <- str_c("All_EE_EMR_v2", most_recent_all_ee$Date[1],".xlsx")
+most_recent_all_ee <- filter(all_ee_single_df,
+                             Date == max(all_ee_single_df$Date))
+
+filename <- str_c("All_EE_EMR_v2",
+                  most_recent_all_ee$Date[1],
+                  ".xlsx")
+
 WriteToFile(most_recent_all_ee,
             fname = filename,
             fpath = "./output/")

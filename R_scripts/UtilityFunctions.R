@@ -4,35 +4,24 @@ SplitDFIntoDFListByCol <- function(df, uniqueColName) {
   unique_names <- unique(df[[uniqueColName]])
   new_list <- lapply(unique_names, function(x, df) {df[df[[uniqueColName]] %in% c(x),]}, df)
   names(new_list) <- unique_names
-  
+
   return(new_list)
 }
 
 #Pad the gid with zeros
-PadGID <- function(gid_no_zeros) {
-  
-  require(stringr)
+#
+PadGID <- function(gid_vec) {
   default_length_of_Gid <- 9
-  length_of_this_Gid <- nchar(gid_no_zeros)
-  
-  #make each element of the gid: prefix dash, zeros(if necessary), and 1:9 numeric portion of gid
-  gid_no_zeros_no_dash <- DropDashFromGid(gid_no_zeros)
-  zeros_string <- paste(rep("0", default_length_of_Gid - length_of_this_Gid), collapse = "")
-  gid_prefix <- "-"
-  
-  #paste the gid, zero string, and prefix elements together
-  gid_with_dash_and_zeros <- paste(gid_prefix,zeros_string, gid_no_zeros_no_dash, 
-                                   collapse = "", sep = "")
-  
-  return(gid_with_dash_and_zeros)
-} 
+  if (sum(str_length(gid_vec) > default_length_of_Gid,  na.rm = TRUE) > 0) {
+    return(gid_vec)
+  }
 
-#Drops first character of GID if it is a dash
-DropDashFromGid <- function(gid) {
-  stopifnot(substr(gid,1,1) == "-")
-  gid_minus_dash <- substr(gid, 2, nchar(gid))
-  return(gid_minus_dash)
+  gid_numbers <- as.numeric(gid_vec)
+  gid_vec <- sprintf("%09d", gid_numbers)
+  return(gid_vec)
 }
+
+
 
 #Create individual dataframes based on unique values of a single column in a dataframe
 SplitDFIntoDFListByCol <- function(df, uniqueColName) {
@@ -40,7 +29,7 @@ SplitDFIntoDFListByCol <- function(df, uniqueColName) {
   unique_names <- unique(df[[uniqueColName]])
   new_list <- lapply(unique_names, function(x, df) {df[df[[uniqueColName]] %in% c(x),]}, df)
   names(new_list) <- unique_names
-  
+
   return(new_list)
 }
 
@@ -48,16 +37,16 @@ JoinDataToDF <- function(df, df_lu, key_main, key_lu)  {
   #save the original column names that will be swapped out with the constant "Key"
   temp_field_name_main <- key_main
   temp_field_name_lu <- key_lu
-  
-  
+
+
   #Key_Unique_To_Program_232323 should be unique, but if it's not.... fuck it, i'll come back and figure
   # something else out
   df <- RenameColumn(df, old_name = key_main, new_name = "Key_Unique_To_Program_232323")
   df_lu <- RenameColumn(df_lu, old_name = key_lu, new_name = "Key_Unique_To_Program_232323")
-  
+
   df <- left_join(df, df_lu, by = c("Key_Unique_To_Program_232323" = "Key_Unique_To_Program_232323"))
-  
-  
+
+
   #put back the original colnames
   df <- RenameColumn(df, old_name = "Key_Unique_To_Program_232323", new_name = key_main)
   df_lu <- RenameColumn(df_lu, old_name = "Key_Unique_To_Program_232323", new_name = key_lu)
@@ -73,7 +62,7 @@ RenameColumn <- function(df, old_name, new_name) {
 GetFileType <- function(fname) {
   #check everything after the period
   ftypestr <- sub(pattern = ".*\\.", replacement = "", x = fname)
-  
+
   #check it against the list of file names to extensions
   ftypemaster <- c("xlsx" = "excel", "xlsm" = "excel", "txt" = "csv", "csv" = "csv")
   type <- ftypemaster[ftypestr]
@@ -96,13 +85,13 @@ WriteToFile <- function(df, fname, fpath, delim, addAsNewSht, sheet = 1) {
   require(openxlsx)
   require(readr)
   require(stringr)
-  
+
   #determine the type of file to be written
   ftype <- GetFileType(fname)
-  
+
   #create the total file path for existence checks
   full_path <- str_c(fpath, fname)
-  
+
   if (CheckForDirNotExist(fpath)) {
     dir.create(fpath)
   }
@@ -112,10 +101,10 @@ WriteToFile <- function(df, fname, fpath, delim, addAsNewSht, sheet = 1) {
       file.create(full_path)
     }
   }
-  
-  
-  
-  
+
+
+
+
   #add logic to handle various file types here
   if (ftype == "csv") {
     if (missing(delim)) {delim <- ", "}
