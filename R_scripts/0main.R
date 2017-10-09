@@ -1,6 +1,6 @@
-#Load packages 
-pacman::p_load(readxl, magrittr, stringr, 
-               lubridate, dplyr, zoo, 
+#Load packages
+pacman::p_load(readxl, magrittr, stringr,
+               lubridate, dplyr, zoo,
                tidyr, readr, stringi,
                xts, tidyverse)
 
@@ -30,25 +30,31 @@ names(all_ee_split) <- str_sub(names(all_ee_split), start = 1, end = 10)
 most_recent_report_indx <- length(allee_split)
 hc_fte_summary <- GetHCandFTEbyOrgs(all_ee_split[[most_recent_report_indx]], use_emr_orgs = TRUE)
 
-
+# Write most recent all ee with column updates to a new file
+most_recent_all_ee <- filter(all_ee_single_df, Date == max(all_ee_single_df$Date))
+filename <- str_c("All_EE_EMR_v2", most_recent_all_ee$Date[1],".xlsx")
+WriteToFile(most_recent_all_ee,
+            fname = filename,
+            fpath = "./output/")
+rm(filename)
 
 ########### WORK TO BE DONE >>>>
 
-# WriteToFile(hc_fte_summary, fname = "HC_FTE_by_dept_org2.xlsx", 
+# WriteToFile(hc_fte_summary, fname = "HC_FTE_by_dept_org2.xlsx",
 #             fpath = "./output/", addAsNewSht = TRUE)
-# 
-# 
+#
+#
 # # each unique gid will be in a row with the time-series of statuses in columns
 # max_col_index <- length(all_ee_split) + 1
 # max_row_index <- n_distinct(all_ee_single_df$GID)
-# 
+#
 # # Rename the split list to remove the time stamps
 # names(all_ee_split) <- sapply(names(all_ee_split), FUN = str_extract,
 #                               pattern = "[0-9]{4}-[0-9]{2}-[0-9]{2}",
 #                              simplify = TRUE, USE.NAMES = FALSE)
-# 
+#
 # #initialize the EE Status dataframe
 # ee_status_col_classes <- c(rep("text", max_col_index + 1))
 # ee_status_col_names <- str_c("GID", names(all_ee_split))
-# 
+#
 # #filter_out nonapplicable jobs via suffix
