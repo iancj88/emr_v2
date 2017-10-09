@@ -2,7 +2,7 @@
 pacman::p_load(readxl, magrittr, stringr,
                lubridate, dplyr, zoo,
                tidyr, readr, stringi,
-               xts, tidyverse)
+               xts, tidyverse, openxlsx)
 
 
 #load functions from scripts
@@ -11,7 +11,8 @@ scripts_files <- c("./R_Scripts/UtilityFunctions.R",
                    #"./R_scripts/LoadAllEEFiles.R",
                    "./R_scripts/HeadCountFTECount.R",
                    "./R_scripts/FLSAFunctions.R",
-                   "./R_scripts/1CompileAllEEReports.R")
+                   "./R_scripts/1CompileAllEEReports.R",
+                   "./R_scripts/SalaryFunctions.R")
 lapply(scripts_files, source)
 rm(scripts_files)
 
