@@ -40,4 +40,3 @@ vignettes/*.pdf
 # SrcData and Employee by Timesheet files
 /SrcData/All*.*
 /EmployeeByTimesheetOrg/Emp*.*
-
