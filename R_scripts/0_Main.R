@@ -11,7 +11,7 @@ scripts_files <- c("./R_Scripts/UtilityFunctions.R",
                    #"./R_scripts/LoadAllEEFiles.R",
                    "./R_scripts/HeadCountFTECount.R",
                    "./R_scripts/FLSAFunctions.R",
-                   "./R_scripts/1CompileAllEEReports.R",
+                   "./R_scripts/1_CompileAllEEReports.R",
                    "./R_scripts/4_FormattingCleanup.R",
                    "./R_scripts/SalaryFunctions.R")
 lapply(scripts_files, source)

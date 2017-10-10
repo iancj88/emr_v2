@@ -8,7 +8,7 @@ AddEMRColumns <- function(df) {
 AddEMROrganizations <- function(all_ee) {
   # Function to add a column of data to a dataframe corresponding to
   #   the EMR Organization of the data
-  require(dplyr, read_xl, hrutilmsu)
+  require(dplyr, read_xl)
 
   # first, load the x-walk table from the local excel file
   path_to_xwalk <- "./LookupData/TableEMRDept.xlsx"
@@ -18,8 +18,9 @@ AddEMROrganizations <- function(all_ee) {
   emr_org_xwalk <- select(emr_org_xwalk, `Dept Number`, EMROrg)
 
   #join the EMROrg to the dataset using a left join function
-  all_ee <- hrutilmsu::JoinDataToDF(df = all_ee, df_lu = emr_org_xwalk,
-                          key_main = "Budget Org.", key_lu = "Dept Number")
+  all_ee <- left_join(all_ee,
+                      emr_org_xwalk,
+                      by = c("Budget Org." = "Dept Number"))
 
   return(all_ee)
 }
