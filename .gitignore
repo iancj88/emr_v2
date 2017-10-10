@@ -36,3 +36,6 @@ vignettes/*.pdf
 # output files from main script
 /output/
 /output/*.*
+
+# SrcData and Employee by Timesheet files
+/SrcData/!README.md
