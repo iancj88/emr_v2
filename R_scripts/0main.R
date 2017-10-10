@@ -36,10 +36,10 @@ hc_fte_summary <- GetHCandFTEbyOrgs(all_ee_split[[most_recent_report_indx]],
                                     use_emr_orgs = TRUE)
 
 # Add Salary info to all_ee dataframe(s)
-all_ee_single_df <- AddLongevityYearsCol(all_ee_single_df,
-                                         long_date_col_name = "Longevity Date",
-                                         emr_job_type_col_name = "EMRJobType",
-                                         curr_date_col_name = "Date")
+all_ee_single_df <- AddAllLongevityData(all_ee_single_df,
+                                        long_date_col_name = "Longevity Date",
+                                        emr_job_type_col_name = "EMRJobType",
+                                        curr_date_col_name = "Date")
 
 # Write most recent all ee with column updates to a new file
 most_recent_all_ee <- filter(all_ee_single_df,

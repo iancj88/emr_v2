@@ -1,4 +1,24 @@
+# helper function to call all relevant functions here
+AddAllLongevityData <- function(df,
+                                long_date_col_name    = "Longevity Date",
+                                emr_job_type_col_name = "EMRJobType",
+                                curr_date_col_name    = NULL,
+                                new_col_suffix        = "_with_Longevity") {
+  # first add the years column
+  df <- AddLongevityYearsCol(df,
+                             long_date_col_name,
+                             emr_job_type_col_name,
+                             curr_date_col_name)
+  # then add the % column
+  df <- AddLongevityPercentCol(df)
 
+  # Lastly compute the bonus and new pay rates
+  df <- AddLongevityPayCol(df, pay_rate_col = "Annual Salary")
+  df <- AddLongevityPayCol(df, pay_rate_col = "Hourly Rate")
+  df <- AddLongevityPayCol(df, pay_rate_col = "Assgn Salary")
+
+  return(df)
+}
 
 
 # Add Longevity Years column
