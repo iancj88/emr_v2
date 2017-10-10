@@ -85,8 +85,8 @@ AddLongevityPercentCol <- function(df) {
 #
 #
 AddLongevityPayCol <- function(df,
-                                    pay_rate_col = "Annual Salary",
-                                    new_col_name = NULL) {
+                               pay_rate_col = "Annual Salary",
+                               new_col_name = NULL) {
 
   if (is.null(new_col_name)) {
     new_col_name <- paste(pay_rate_col,
@@ -94,7 +94,9 @@ AddLongevityPayCol <- function(df,
                           sep = "")
   }
 
-  amnt_to_add_col_name <- paste(pay_rate_col, "_Longevity_Bonus")
+  amnt_to_add_col_name <- paste(pay_rate_col,
+                                "_Longevity_Bonus",
+                                sep = "")
 
   df[, new_col_name] <- df[[pay_rate_col]] * (1 + df$Longevity_Percent)
   df[, amnt_to_add_col_name] <- df[[pay_rate_col]] * df$Longevity_Percent
