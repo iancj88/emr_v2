@@ -2,11 +2,17 @@
 
 CompileAllEEReports <- function(path_to_files) {
 
-  #get the list of wb file names and filepaths
+  # get the list of all ee wb file names and filepaths
+  # the workbooks must match the following regex pattern.
+  wb_pattern <- "All EE [0-9]{4}-[0-9]{2}-[0-9]{2}\\.xlsx"
   wb_names_and_filepaths <- list.files(path_to_files,
-                                       full.names = TRUE)
+                                       full.names = TRUE,
+                                       pattern = wb_pattern)
   wb_names_only <- list.files(path_to_files,
-                              full.names = FALSE)
+                              full.names = FALSE,
+                              pattern = wb_pattern)
+
+
 
   #read each wb into a separate dataframe
   wb_col_types <- GetAllEEColTypes()
@@ -196,7 +202,8 @@ AddJobEcls <- function(df) {
   require(stringr)
   #load the newest timesheet report which contains the job ecls data
   timesheet_reports <- list.files(path = "./EmployeeByTimesheetOrg/",
-                                  full.names = TRUE)
+                                  full.names = TRUE,
+                                  pattern = "Employee.*")
 
   timesheet_reports <- str_sort(timesheet_reports,
                                 decreasing = TRUE)[1]
