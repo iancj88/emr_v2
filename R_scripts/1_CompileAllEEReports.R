@@ -1,6 +1,8 @@
 
 
 CompileAllEEReports <- function(path_to_files) {
+  require(stringr)
+  require(dplyr)
 
   # get the list of all ee wb file names and filepaths
   # the workbooks must match the following regex pattern.
@@ -94,6 +96,9 @@ CompileAllEEReports <- function(path_to_files) {
   # Add the FLSA Specific columns --
   # This must go after adding the EMR Columns!!!
   df_allEE <- AddFLSAColumns(df_allEE)
+
+  # Remove non-Bozeman positions
+  df_allEE <- filter(df_allEE, substr(df_allEE$`Position Number`, 1, 1) == "4")
 
   #fix the 'OTHER' org. heirarchy
   isProvost <- (df_allEE$`Org. Heirarchy` == "Other Provost")

@@ -1,0 +1,50 @@
+compileAllEEEMRExtended <- function(df) {
+
+  # Reorder columns
+  df <- select(df,
+               Date,
+               Name_Full,
+               Status,
+               Job_Type_EMR,
+               Job_Title,
+               Position_Title,
+               FTE,
+               Position_Number,
+               Org_EMR,
+               PEAEMPL_Home_Department,
+               Job_Budget_Org_Long_Desc,
+               Home_Orgn_Number,
+               Job_Budget_Org,
+               PEAEMPL_ECLS,
+               PEAEMPL_ECLS_Description,
+               MUS_Contract,
+               Suffix,
+               Job_Type,
+               Pays,
+               Current_Hire_Date,
+               Campus_Orig_Hire,
+               Longevity_Date,
+               Annual_Lv_Accrual,
+               Anniversary_Date,
+               Job_Begin_Date,
+               Retirement,
+               Union,
+               MUS_SOC_Code,
+               MUS_SOC_Description,
+               Key_Job,
+               Longevity_Years,
+               Longevity_Percent,
+               Annual_Salary_Base,
+               Annual_Salary_with_Longevity,
+               Annual_Salary_Longevity_Bonus,
+               Assgn_Salary_Base,
+               Assgn_Salary_with_Longevity,
+               Assgn_Salary_Longevity_Bonus,
+               Hourly_Rate_Base,
+               Hourly_Rate_with_Longevity,
+               Hourly_Rate_Longevity_Bonus)
+
+  names(df) <- gsub("_", " ", names(df))
+
+  return(df)
+}

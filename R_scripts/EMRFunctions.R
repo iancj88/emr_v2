@@ -73,11 +73,18 @@ AddEMRJobType <- function(all_ee) {
   all_ee[is_adhoc, "EMRJobType"] <- "Ad-Hoc Hourly"
 
   # Apply the non-Job payment label
+
   is_non_job_payment <- (all_ee$Suffix %in% c("SD", "GP", "CR", "OT", "OL", "TF", "TM",
                                               "LW", "TL", "TR", "RF", "OC", "L3", "GS", "SE")
-                         | all_ee$`Position Number` %in% c("4ADCMP", "4ONEPY"))
+                         | all_ee$`Position Number` %in% c("4ADCMP", "4ONEPY", "4TERMS"))
   all_ee[is_non_job_payment,"EMRJobType"] <- "Non-Job Payment"
   rm(is_non_job_payment)
+
+  # Apply the additional comp payment label
+  #is_add_comp <- (all_ee$Suffix %in% )
+  #
+  # TODO:
+  #   differentiate non-job-payment for additional compensation payment
 
   return(all_ee)
 }
