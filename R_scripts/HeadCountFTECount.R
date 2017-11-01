@@ -1,6 +1,11 @@
 
 
 GetHCandFTEbyOrgs <- function(all_ee_df_or_list, use_emr_orgs = FALSE) {
+  # TODO:
+  #   Standardize df column names,
+  #   Create excel template to handle description page
+  #   Properly order output list for excel
+
   require(dplyr)
   #filter out non-applicable rows
   if (!class(all_ee_df_or_list) == "list") {
@@ -62,15 +67,21 @@ GetHCandFTEbyOrgs <- function(all_ee_df_or_list, use_emr_orgs = FALSE) {
         RenameColumn(hc_fte_cnt_all, "Org_EMR", "EMR Organization")
       }
 
-
+    hc_fte_cnt_desc <- paste("The following counts are derived from the all employees report dated ",
+                             all_ee_df_or_list$Date,
+                             "\r\n\r\n",
+                             ""
+                             sep = "")
     if (i == 1) {
-      output <- list(hc_fte_cnt_all,
-                      hc_fte_cnt_org_etype,
-                      hc_fte_cnt_total,
-                      hc_fte_cnt_total_etype,
-                      hc_fte_cnt_dept,
-                      hc_fte_cnt_orgn)
-      names(output) <- c("Org - Dept - EType",
+      output <- list(hc_fte_cnt_desc,
+                     hc_fte_cnt_all,
+                     hc_fte_cnt_org_etype,
+                     hc_fte_cnt_total,
+                     hc_fte_cnt_total_etype,
+                     hc_fte_cnt_dept,
+                     hc_fte_cnt_orgn)
+      names(output) <- c("Description",
+                         "Org - Dept - EType",
                          "Org - Etype",
                          "University Total",
                          "University - Etype",
