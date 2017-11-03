@@ -31,11 +31,6 @@ names(all_ee_split) <- str_sub(names(all_ee_split),
                                start = 1,
                                end = 10)
 
-# Get Headcount and FTE counts for departments and orgs
-most_recent_report_indx <- length(all_ee_split)
-hc_fte_summary <- GetHCandFTEbyOrgs(all_ee_split[[most_recent_report_indx]],
-                                    use_emr_orgs = TRUE)
-
 # Add Salary info to all_ee dataframe(s)
 all_ee_single_df <- AddAllLongevityData(all_ee_single_df,
                                         long_date_col_name = "Longevity Date",
@@ -44,6 +39,14 @@ all_ee_single_df <- AddAllLongevityData(all_ee_single_df,
 
 # Clean up the column names before exporting
 all_ee_single_df <- CleanupOutput(all_ee_single_df)
+all_ee_split <- lapply(all_ee_split, FUN = CleanupOutput)
+
+# Get Headcount and FTE counts for departments and orgs
+most_recent_report_indx <- length(all_ee_split)
+hc_fte_summary <- GetHCandFTEbyOrgs(all_ee_split[[most_recent_report_indx]],
+                                    use_emr_orgs = TRUE)
+
+
 
 # Write most recent all ee with column updates to a new file
 most_recent_all_ee <- filter(all_ee_single_df,

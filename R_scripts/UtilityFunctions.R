@@ -107,7 +107,7 @@ WriteToFile <- function(df, fname, fpath, delim, addAsNewSht, sheet = 1) {
 
   #add logic to handle various file types here
   if (ftype == "csv") {
-    if (missing(delim)) {delim <- ", "}
+    if (missing(delim)) {delim <- ","}
     write_delim(df, path = full_path, append = FALSE, delim = delim)
   } else if (ftype == "excel") {
     #

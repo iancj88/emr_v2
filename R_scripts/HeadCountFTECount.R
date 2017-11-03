@@ -70,7 +70,6 @@ GetHCandFTEbyOrgs <- function(all_ee_df_or_list, use_emr_orgs = FALSE) {
     hc_fte_cnt_desc <- paste("The following counts are derived from the all employees report dated ",
                              all_ee_df_or_list$Date,
                              "\r\n\r\n",
-                             ""
                              sep = "")
     if (i == 1) {
       output <- list(hc_fte_cnt_desc,
