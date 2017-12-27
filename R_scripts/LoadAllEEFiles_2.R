@@ -1,55 +1,126 @@
 
 
-
-CompileAllEEReports <- function(path_to_files) {
+CompileAllEEReports <- function(path_to_files, file_extension = ".txt") {
   require(lubridate)
-  Rprof(tmp <- tempfile())
-  #get the list of wb file names and filepaths
-  wb_names_and_filepaths <- list.files(path_to_files, full.names = TRUE)
-  wb_names_only <- list.files(path_to_files, full.names = FALSE)
+  require(readr)
+  require(lubridate)
+  # stop if the file type is not ".xlsx" or ".txt"
+  stopifnot(file_extension %in% c(".txt", ".xlsx"))
   
-  #read each wb into a separate dataframe
-  wb_col_types <- GetAllEEColTypes()
-  all_ee_datasets <- ReadfromExcelFiles(wb_names_and_filepaths, wb_col_types)
+  Add_Dates <- function(df, dte) {
+    date_vec <- c(rep(dte, nrow(df)))
+    df$Date <- as.POSIXct(date_vec)
+    return(df)
+  }
   
   ReadfromExcelFiles <- function(name_and_filepaths, col_types) {
-    data_sets <- lapply(name_and_filepaths, FUN = read_excel, sheet = 1,
-                                col_types = col_types, col_names = T)
+    data_sets <- lapply(name_and_filepaths, 
+                        FUN = read_excel, 
+                        sheet = 1,
+                        col_types = col_types, 
+                        col_names = T)
     return(data_sets)
   }
   
-  #Name the dataset list using the date in the file name, 
-  # this works because the files are read in the same order
-  # above as the filenames are read here.
+  ReadfromTextFiles <- function(name_and_filepaths, col_types) {
+    require(data.table)
+    setClass("dd-MMM-yy")
+    setAs("character", "dd-MMM-yy", function(from) as.Date(from, format = "%d-%b-%y"))
+    #use the correct column types
+    col_types <- gsub("text", "character", col_types) %>%
+      #{gsub("numeric", "number", .)} %>%
+      {gsub("date", "dd-MMM-yy", .)} #%>%
+      #paste0(collapse = "")
+    col_fread_types <- list(character = c("GID", 
+                                          "Suffix", 
+                                          "Orgn", 
+                                          "Fund", 
+                                          "Program",
+                                          "SOC Description",
+                                          "SOC Code",
+                                          "Phone",
+                                          "Zip"),
+                            character = which(col_types == "dd-MMM-yy"))
+    
+    data_sets <- lapply(name_and_filepaths,
+                        FUN = fread,
+                        header = TRUE,
+                        sep = ";",
+                        colClasses = col_fread_types,
+                        skip = 12)
+    
+    return(data_sets)
+  }
   
-  report_date_chr <- gsub("All EE ", "", wb_names_only) %>% #Remove the preceeding All EE prefix from the filename
-    {gsub(".xlsx", "", . )} #Remove the excel file type suffix from the filename
-  names(all_ee_datasets) <- report_date_chr
-  
-  #put the date (currently stored in the names of the dataframes) into a column of each dataframe
-
-  all_ee_datasets <- add_date_col(all_ee_datasets, dates = names(all_ee_datasets))
   add_date_col <- function(dfs, dates) {
     dfs_out <- mapply(FUN = Add_Dates, dfs, dates, SIMPLIFY = F)
   }
   
-  Add_Dates <- function(df, dte) {
-    date_vec <- c(rep(dte, nrow(x)))
-    x$Date <- as.POSIXct(date_vec)
-    return(x)
+  #get the list of wb file names and filepaths that are .xlsx
+  wb_names_and_filepaths <- list.files(path_to_files, full.names = TRUE)
+  wb_names_and_filepaths <- wb_names_and_filepaths[str_detect(wb_names_and_filepaths, file_extension)]
+  wb_names_only <- list.files(path_to_files, full.names = FALSE)
+  wb_names_only <- wb_names_only[str_detect(wb_names_only, file_extension)]
+  
+  wb_col_types <- GetAllEEColTypes()
+  
+  if(file_extension == ".xlsx") {
+
+    #read each wb into a separate dataframe    
+    all_ee_datasets <- ReadfromExcelFiles(wb_names_and_filepaths, wb_col_types)
+    
+    #Name the dataset list using the date in the file name, 
+    # this works because the files are read in the same order
+    # above as the filenames are read here.
+    report_date_chr <- gsub("All EE ", "", wb_names_only) %>% #Remove the preceeding All EE prefix from the filename
+      {gsub(".xlsx", "", . )} #Remove the excel file type suffix from the filename
+    names(all_ee_datasets) <- report_date_chr
   }
+  
+  if(file_extension == ".txt") {
+    
+    all_ee_datasets <- ReadfromTextFiles(wb_names_and_filepaths, wb_col_types)
+    
+    # Name the dataset list using the date in the file name, 
+    # this works because the files are read in the same order
+    # above as the filenames are read here.
+    report_date_chr <- gsub(" All Employees.txt", "", wb_names_only) #Only keep the first 8 digits corresponding to the date
+    names(all_ee_datasets) <- as.character(as.POSIXlt(report_date_chr, format = "%Y%m%d"))
+  }
+  
+  
+  #put the date (currently stored in the names of the dataframes) into a column of each dataframe
+  all_ee_datasets <- add_date_col(all_ee_datasets, dates = names(all_ee_datasets))
   
   #combine dataframes
   df_allEE <- bind_rows(all_ee_datasets)
   
+  # format date columns
+  if (file_extension == ".txt") {
+    df_allEE <- setDF(df_allEE)
+    date_col_indx <- which(wb_col_types == "date")
+    for(col in date_col_indx) {
+      df_allEE[,col] <- parse_date_time(df_allEE[,col], "d-b-y")
+      misread_years <- which(year(df_allEE[,col]) > year(Sys.Date()))
+      if(length(misread_years) > 0) {
+        year(df_allEE[misread_years, col]) <- year(df_allEE[misread_years, col]) - 100
+        misread_years <- NULL
+      }
+    }
+  }
+  
+  
+  
+  
   #pad the gids to ensure that they are properly treated as char scalars
-  #df_allEE$GID <- sapply(df_allEE$GID, PadGID)
+  df_allEE$GID <- sapply(df_allEE$GID, PadGID)
+  
   
   #add a full name
   df_allEE$FullName <- str_c(df_allEE$`Last Name`,", ", df_allEE$`First Name`)
   
   #pad the suffix if necessary
-  df_allEE$Suffix <- stri_replace_first_regex(df_allEE$Suffix, "([0-9])$", "0$1")
+  df_allEE$Suffix <- stri_replace_first_regex(df_allEE$Suffix, "(^[0-9])$", "0$1")
   
   #add a unique key for each row from the GID + Position_Number + Suffix
   df_allEE$Key <- str_c(df_allEE$GID, df_allEE$`Position Number`, df_allEE$Suffix)
@@ -115,11 +186,11 @@ CompileAllEEReports <- function(path_to_files) {
   years_of_service <- floor(years_of_service) # use the whole integer for the lookup value in the longevity multiplier percent
   
   df_allEE$`years_of_service` <- years_of_service
-  longevity_mutiplier_lu <- read_xlsx(path = "C:/VBA_Src/Tables/TableLongevity.xlsx")
-  JoinDataToDF(df_allEE, df_lu = longevity_mutiplier_lu, key_main = "years_of_service", key_lu = "YearsOfService")
+  longevity_mutiplier_lu <- read_xlsx(path = "C:/VBA_Source/Tables/TableLongevity.xlsx")
+  df_allEE <- JoinDataToDF(df_allEE, df_lu = longevity_mutiplier_lu, key_main = "years_of_service", key_lu = "YearsOfService")
   # there should now be a column in the dataframe titled "PercentToBase"
   df_allEE$PercentToBase <- df_allEE$PercentToBase + 1
-  df_allEE[,!df_allEE$EMRJobType == "Classified"]$PercentToBase <- 1
+  df_allEE[which(!df_allEE$EMRJobType == "Classified"), "PercentToBase"] <- 1
   df_allEE$BaseAndLongHourly <- df_allEE$PercentToBase * df_allEE$`Hourly Rate`
   df_allEE$BaseAndLongAssgn <- df_allEE$PercentToBase * df_allEE$`Assgn Salary`
   df_allEE$BaseAndLongAnnual <- df_allEE$PercentToBase * df_allEE$`Annual Salary`
@@ -153,15 +224,15 @@ CompileAllEEReports <- function(path_to_files) {
   
   #package both into a list
   list_out <- list(df_allEE, df_all_split)
-  Rprof(NULL)
-  saveRDS(tmp, file = "rprofiler.rds")
+  
+  
   return(list_out)
   
 }
 
 GetAllEEColTypes <- function() {
   ### These are the column names output on the all ee report as of Nov. 23, 2016:
-  
+
   # [1] "GID"                     "Last Name"               "First Name"                   
   # [5] "Home Street 1"           "Home Street 2"           "Home Street 3"          
   # [9] "City"                    "State"                   "Zip"                     "Campus"                 
